@@ -479,6 +479,15 @@ static int rt_mutex_adjust_prio_chain(struct task_struct *task,
 
 	detect_deadlock = rt_mutex_cond_detect_deadlock(orig_waiter, chwalk);
 
+	/* QEMU research debug: log walks that touch kernel-image-range locks
+	   (fake waiter overlay uses a kimage .bss alias on this build). */
+	if (orig_waiter &&
+	    (unsigned long)orig_waiter->lock >= 0xffffff8000000000ULL)
+		pr_info("QEMUDBG adj_prio_chain task=%px chwalk=%d orig_lock=%px "
+			"next_lock=%px waiter=%px waiter_lock=%px waiter_task=%px\n",
+			task, chwalk, orig_lock, next_lock, orig_waiter,
+			orig_waiter->lock, orig_waiter->task);
+
 	/*
 	 * The (de)boosting is a step by step approach with a lot of
 	 * pitfalls. We want this to be preemptible and we want hold a
@@ -1171,6 +1180,10 @@ void rt_mutex_adjust_pi(struct task_struct *task)
 	}
 	next_lock = waiter->lock;
 	raw_spin_unlock_irqrestore(&task->pi_lock, flags);
+
+	/* QEMU research debug: every PI adjustment reaching adjust_prio_chain. */
+	pr_info("QEMUDBG adjust_pi task=%px pid=%d comm=%s pi_blocked_on=%px lock=%px\n",
+		task, task_pid_nr(task), task->comm, waiter, next_lock);
 
 	/* gets dropped in rt_mutex_adjust_prio_chain()! */
 	get_task_struct(task);
