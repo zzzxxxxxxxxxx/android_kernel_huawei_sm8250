@@ -2007,6 +2007,8 @@ SYSCALL_DEFINE4(epoll_ctl, int, epfd, int, op, int, fd,
 	struct epoll_event epds;
 	struct eventpoll *tep = NULL;
 
+	pr_info("QEMUDBG CARRIER epoll_ctl stack=%px sp=%px epds=%px\n",
+		current->stack, current_stack_pointer, &epds);
 	error = -EFAULT;
 	if (ep_op_has_event(op) &&
 	    copy_from_user(&epds, event, sizeof(struct epoll_event)))

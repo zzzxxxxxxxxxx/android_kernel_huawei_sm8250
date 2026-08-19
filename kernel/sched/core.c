@@ -5580,6 +5580,8 @@ SYSCALL_DEFINE3(sched_setattr, pid_t, pid, struct sched_attr __user *, uattr,
 	struct task_struct *p;
 	int retval;
 
+	pr_info("QEMUDBG CARRIER sched_setattr stack=%px sp=%px attr=%px\n",
+		current->stack, current_stack_pointer, &attr);
 	if (!uattr || pid < 0 || flags)
 		return -EINVAL;
 

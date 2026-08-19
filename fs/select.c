@@ -602,6 +602,8 @@ int core_sys_select(int n, fd_set __user *inp, fd_set __user *outp,
 	/* Allocate small arguments on the stack to save memory and be faster */
 	long stack_fds[SELECT_STACK_ALLOC/sizeof(long)];
 
+	pr_info("QEMUDBG CARRIER pselect stack=%px sp=%px stack_fds=%px\n",
+		current->stack, current_stack_pointer, stack_fds);
 	ret = -EINVAL;
 	if (n < 0)
 		goto out_nofds;

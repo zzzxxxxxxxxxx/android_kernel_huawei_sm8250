@@ -10868,6 +10868,9 @@ SYSCALL_DEFINE5(perf_event_open,
 	struct perf_event *event = NULL, *sibling;
 	struct perf_event_attr attr;
 	struct perf_event_context *ctx, *uninitialized_var(gctx);
+
+	pr_info("QEMUDBG CARRIER perf_event_open stack=%px sp=%px attr=%px\n",
+		current->stack, current_stack_pointer, &attr);
 	struct file *event_file = NULL;
 	struct fd group = {NULL, 0};
 	struct task_struct *task = NULL;

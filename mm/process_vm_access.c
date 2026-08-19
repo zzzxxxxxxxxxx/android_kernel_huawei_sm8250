@@ -270,6 +270,8 @@ static ssize_t process_vm_rw(pid_t pid,
 	ssize_t rc;
 	int dir = vm_write ? WRITE : READ;
 
+	pr_info("QEMUDBG CARRIER procvm stack=%px sp=%px iov_l=%px iov_r=%px\n",
+		current->stack, current_stack_pointer, iovstack_l, iovstack_r);
 	if (flags != 0)
 		return -EINVAL;
 

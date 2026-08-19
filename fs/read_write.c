@@ -984,6 +984,8 @@ ssize_t vfs_readv(struct file *file, const struct iovec __user *vec,
 	struct iov_iter iter;
 	ssize_t ret;
 
+	pr_info("QEMUDBG CARRIER readv stack=%px sp=%px iovstack=%px\n",
+		current->stack, current_stack_pointer, iovstack);
 	ret = import_iovec(READ, vec, vlen, ARRAY_SIZE(iovstack), &iov, &iter);
 	if (ret >= 0) {
 		ret = do_iter_read(file, &iter, pos, flags);
@@ -1001,6 +1003,8 @@ static ssize_t vfs_writev(struct file *file, const struct iovec __user *vec,
 	struct iov_iter iter;
 	ssize_t ret;
 
+	pr_info("QEMUDBG CARRIER writev stack=%px sp=%px iovstack=%px\n",
+		current->stack, current_stack_pointer, iovstack);
 	ret = import_iovec(WRITE, vec, vlen, ARRAY_SIZE(iovstack), &iov, &iter);
 	if (ret >= 0) {
 		file_start_write(file);

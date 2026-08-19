@@ -2086,6 +2086,8 @@ static int ___sys_sendmsg(struct socket *sock, struct user_msghdr __user *msg,
 	int ctl_len;
 	ssize_t err;
 
+	pr_info("QEMUDBG CARRIER sendmsg stack=%px sp=%px iovstack=%px\n",
+		current->stack, current_stack_pointer, iovstack);
 	msg_sys->msg_name = &address;
 
 	if (MSG_CMSG_COMPAT & flags)

@@ -26,6 +26,7 @@
 #include "rtmutex_common.h"
 
 extern struct task_struct init_task;
+extern char *saved_command_line;
 
 /*
  * lock->owner state tracking:
@@ -501,7 +502,8 @@ static int rt_mutex_adjust_prio_chain(struct task_struct *task,
 	   real system PI locks live in the direct map.  nokaslr link-time
 	   addresses from System.map. */
 	if (orig_waiter == NULL && task && task->pi_blocked_on &&
-	    (unsigned long)task->pi_blocked_on->lock >= 0xffffff8000000000ULL) {
+	    (unsigned long)task->pi_blocked_on->lock >= 0xffffff8000000000ULL &&
+	    strstr(saved_command_line, "qemu_repair")) {
 		struct rt_mutex_waiter *dw = task->pi_blocked_on;
 		uintptr_t bootid = 0xffffff800acf4b08ULL;  /* sysctl_bootid */
 		uintptr_t logs = 0xffffff800aa12348ULL + 8; /* &loggers[0][1] */
@@ -1226,8 +1228,10 @@ void rt_mutex_adjust_pi(struct task_struct *task)
 	raw_spin_unlock_irqrestore(&task->pi_lock, flags);
 
 	/* QEMU research debug: every PI adjustment reaching adjust_prio_chain. */
-	pr_info("QEMUDBG adjust_pi task=%px pid=%d comm=%s pi_blocked_on=%px lock=%px\n",
-		task, task_pid_nr(task), task->comm, waiter, next_lock);
+	pr_info("QEMUDBG adjust_pi task=%px pid=%d comm=%s stack=%px "
+		"pi_blocked_on=%px lock=%px\n",
+		task, task_pid_nr(task), task->comm, task->stack,
+		waiter, next_lock);
 
 	/* gets dropped in rt_mutex_adjust_prio_chain()! */
 	get_task_struct(task);
