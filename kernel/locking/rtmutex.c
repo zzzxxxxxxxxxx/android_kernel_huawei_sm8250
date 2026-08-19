@@ -25,6 +25,8 @@
 
 #include "rtmutex_common.h"
 
+extern struct task_struct init_task;
+
 /*
  * lock->owner state tracking:
  *
@@ -315,7 +317,16 @@ rt_mutex_dequeue(struct rt_mutex *lock, struct rt_mutex_waiter *waiter)
 	if (RB_EMPTY_NODE(&waiter->tree_entry))
 		return;
 
+	if ((unsigned long)waiter->tree_entry.rb_left >= 0xffffff8000000000ULL)
+		pr_info("QEMUDBG DEQUEUE lock=%px waiter=%px "
+			"left=%px right=%px pc=%#lx\n",
+			lock, waiter, waiter->tree_entry.rb_left,
+			waiter->tree_entry.rb_right,
+			waiter->tree_entry.__rb_parent_color);
 	rb_erase_cached(&waiter->tree_entry, &lock->waiters);
+	if ((unsigned long)waiter->tree_entry.rb_left >= 0xffffff8000000000ULL)
+		pr_info("QEMUDBG DEQUEUE2 bootid=%016llx\n",
+			*(unsigned long long *)0xffffff800acf4b08ULL);
 	RB_CLEAR_NODE(&waiter->tree_entry);
 }
 
@@ -479,6 +490,35 @@ static int rt_mutex_adjust_prio_chain(struct task_struct *task,
 
 	detect_deadlock = rt_mutex_cond_detect_deadlock(orig_waiter, chwalk);
 
+	/* QEMU REPAIR3 (port of the device rtmutex-dbg KPM overlay repair):
+	   the fake walk arrives with orig_waiter==NULL and task->pi_blocked_on
+	   pointing at the dangling rt_waiter whose task/lock words were
+	   clobbered by the pselect return path (res_in[3]/[4]).  Rebuild the
+	   tree/task/lock words and force next_lock so the walk passes [3]
+	   (next_lock == waiter->lock) and reaches [7] rt_mutex_dequeue() ->
+	   rb_erase, writing tree_left = &loggers[0][1] into sysctl_bootid.
+	   Only fake walks have a pi_blocked_on->lock in the kernel image range;
+	   real system PI locks live in the direct map.  nokaslr link-time
+	   addresses from System.map. */
+	if (orig_waiter == NULL && task && task->pi_blocked_on &&
+	    (unsigned long)task->pi_blocked_on->lock >= 0xffffff8000000000ULL) {
+		struct rt_mutex_waiter *dw = task->pi_blocked_on;
+		uintptr_t bootid = 0xffffff800acf4b08ULL;  /* sysctl_bootid */
+		uintptr_t logs = 0xffffff800aa12348ULL + 8; /* &loggers[0][1] */
+		uintptr_t zeropage = 0xffffff800ac4e000ULL; /* empty_zero_page */
+
+		WRITE_ONCE(dw->tree_entry.__rb_parent_color, logs);
+		WRITE_ONCE(dw->tree_entry.rb_left,
+			   (struct rb_node *)(uintptr_t)bootid);
+		WRITE_ONCE(dw->tree_entry.rb_right, NULL);
+		WRITE_ONCE(dw->task, &init_task);
+		WRITE_ONCE(dw->lock, (struct rt_mutex *)zeropage);
+		next_lock = (struct rt_mutex *)zeropage;
+		pr_info("QEMUDBG REPAIR3 waiter=%px tree_pc=%#lx tree_left=%#lx "
+			"task=%px lock=%px\n",
+			dw, logs, bootid, dw->task, dw->lock);
+	}
+
 	/* QEMU research debug: log walks that touch kernel-image-range locks
 	   (fake waiter overlay uses a kimage .bss alias on this build). */
 	if (orig_waiter &&
@@ -561,8 +601,12 @@ static int rt_mutex_adjust_prio_chain(struct task_struct *task,
 	 * We stored the lock on which @task was blocked in @next_lock,
 	 * so we can detect the chain change.
 	 */
-	if (next_lock != waiter->lock)
+	if (next_lock != waiter->lock) {
+		if ((unsigned long)waiter->lock >= 0xffffff8000000000ULL)
+			pr_info("QEMUDBG BAIL3 next_lock=%px waiter_lock=%px\n",
+				next_lock, waiter->lock);
 		goto out_unlock_pi;
+	}
 
 	/*
 	 * Drop out, when the task has no waiters. Note,
