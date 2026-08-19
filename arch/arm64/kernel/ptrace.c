@@ -616,6 +616,8 @@ static int gpr_set(struct task_struct *target, const struct user_regset *regset,
 	int ret;
 	struct user_pt_regs newregs = task_pt_regs(target)->user_regs;
 
+	pr_info("QEMUDBG CARRIER ptrace_setregs stack=%px sp=%px newregs=%px\n",
+		current->stack, current_stack_pointer, &newregs);
 	ret = user_regset_copyin(&pos, &count, &kbuf, &ubuf, &newregs, 0, -1);
 	if (ret)
 		return ret;
@@ -674,6 +676,8 @@ static int __fpr_set(struct task_struct *target,
 	int ret;
 	struct user_fpsimd_state newstate;
 
+	pr_info("QEMUDBG CARRIER ptrace_fpr_set stack=%px sp=%px newstate=%px\n",
+		current->stack, current_stack_pointer, &newstate);
 	/*
 	 * Ensure target->thread.uw.fpsimd_state is up to date, so that a
 	 * short copyin can't resurrect stale data.
