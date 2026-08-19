@@ -1,4 +1,5 @@
 # SPDX-License-Identifier: GPL-2.0
+ccflags-y += -I$(src)
 ifdef CONFIG_IOCACHE
 subdir-ccflags-y += -I$(srctree)/drivers/md/iocache
 endif

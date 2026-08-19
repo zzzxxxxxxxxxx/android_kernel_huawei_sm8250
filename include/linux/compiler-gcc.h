@@ -60,7 +60,9 @@
 
 #define __optimize(level)	__attribute__((__optimize__(level)))
 
+#ifdef CONFIG_FORTIFY_SOURCE
 #define __compiletime_object_size(obj) __builtin_object_size(obj, 0)
+#endif
 
 #ifndef __CHECKER__
 #define __compiletime_warning(message) __attribute__((warning(message)))

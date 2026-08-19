@@ -2,6 +2,10 @@
 # Backward compatibility
 asflags-y  += $(EXTRA_AFLAGS)
 ccflags-y  += $(EXTRA_CFLAGS)
+# Standalone build: Huawei ships no global include manifest, so vendor modules
+# using <header.h> for same-directory headers would fail; put the current
+# object directory on the search path (core include paths still come first).
+ccflags-y  += -I$(src)
 cppflags-y += $(EXTRA_CPPFLAGS)
 ldflags-y  += $(EXTRA_LDFLAGS)
 

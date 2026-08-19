@@ -1,4 +1,5 @@
 # SPDX-License-Identifier: GPL-2.0
+ccflags-y += -I$(src)
 #
 # Makefile for the HID driver
 #

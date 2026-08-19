@@ -1082,7 +1082,8 @@ static void sy3132cs_print_reg(const struct sy3132cs_ctx *ctx)
 void sy3132cs_set_als_mode(const struct sy3132cs_ctx *ctx, uint8_t mode)
 {
 	const uint8_t reg_len = 8;
-	uint8_t reg_value[reg_len] = { 0 }; // 0x01-0x0F
+	uint8_t reg_value[reg_len];
+	memset(reg_value, 0, sizeof(reg_value)); // 0x01-0x0F
 	int ret;
 
 	ret = color_sensor_read_fifo(ctx->handle,
@@ -1390,7 +1391,8 @@ void sy3132cs_set_als_mode2(const struct sy3132cs_ctx *ctx)
 void sy3132cs_ic_startup_process(struct sy3132cs_ctx *ctx)
 {
 	const uint8_t len = 12;
-	uint16_t raw_data[len] = { 0 };
+	uint16_t raw_data[len];
+	memset(raw_data, 0, sizeof(raw_data));
 	int i;
 	int j;
 
@@ -1467,7 +1469,8 @@ void sy3132cs_ic_startup_process(struct sy3132cs_ctx *ctx)
 void sy3132cs_read_channel_raw_data(const struct sy3132cs_ctx *ctx)
 {
 	const uint8_t len = 20;
-	uint8_t raw_data[len] = { 0 };
+	uint8_t raw_data[len];
+	memset(raw_data, 0, sizeof(raw_data));
 	uint8_t i;
 	uint8_t double_byte = 2;
 	const uint8_t dummy_len = 4;

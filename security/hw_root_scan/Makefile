@@ -16,5 +16,6 @@ ccflags-$(CONFIG_HW_ROOT_SCAN) += -Idrivers/ca_antiroot
 else
 ccflags-$(CONFIG_HW_ROOT_SCAN) += -I$(srctree)/drivers/hisi/ca_antiroot
 endif
+ccflags-$(CONFIG_HW_ROOT_SCAN) += -I$(srctree)/security/hw_root_scan/include
 
 flags += -Wdate-time -Wfloat-equal

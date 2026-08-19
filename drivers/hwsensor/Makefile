@@ -6,6 +6,7 @@ obj-$(CONFIG_SENSOR_DEVELOP_TEST)			+= develop_test.o
 obj-$(CONFIG_HUAWEI_SENSOR_INFO)			+= hw_sensor_info.o
 obj-$(CONFIG_HUAWEI_SAR_SENSOR)				+= sarsensor/
 obj-y                                       += sensors_class.o
+obj-y                                       += lcd_kit_stub.o
 obj-y                                       += sensors_sysfs_als.o
 obj-y                                       += apsensor_channel/
 obj-y                                       += xhub_router/

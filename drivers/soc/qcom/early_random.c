@@ -35,7 +35,10 @@ void __init init_random_pool(void)
 
 	dmac_flush_range(random_buffer, random_buffer + RANDOM_BUFFER_SIZE);
 
-	ret = scm_call2(SCM_SIP_FNID(TZ_SVC_CRYPTO, PRNG_CMD_ID), &desc);
+	/* QEMU research build: the TZ PRNG SCM call traps as an undefined
+	 * instruction on -M virt (no EL3/TZ); skip it, entropy comes from
+	 * the other early sources. */
+	ret = -ENODEV;
 
 	if (!ret) {
 		u64 bytes_received = desc.ret[0];
@@ -52,4 +55,3 @@ void __init init_random_pool(void)
 					   bytes_received << 3);
 	}
 }
-
