@@ -1,0 +1,16 @@
+# kernel build artifacts - not part of the Huawei open-source release
+*.o
+*.cmd
+*.mod
+*.mod.c
+Module.symvers
+modules.order
+.tmp_*/
+.tmp_versions/
+.missing-syscalls.d
+.config.old
+vmlinux
+vmlinux.o
+arch/arm64/boot/Image
+arch/arm64/boot/Image.gz
+arch/arm64/boot/Image.gz-dtb
